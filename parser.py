@@ -4,8 +4,6 @@ from config import URL_TOPICS, URL_FLOW, URL_BASIC
 import article
 import sql_moves
 
-# sql connect
-BotDB = sql_moves.BotDB()
 
 # обход всех страниц и получение всех разделов
 def parse_topics():
@@ -46,4 +44,3 @@ def parse_by_flow(flow):
         art = article.Article(author, time_added, title, complexity, minutes_to_read, url)
         articles.append(art)
     return articles
-

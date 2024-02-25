@@ -12,6 +12,9 @@ from aiogram.utils.markdown import hbold
 
 import config
 import parser
+import sql_moves
+
+from datetime import datetime
 
 # bot
 dp = Dispatcher()
@@ -28,7 +31,7 @@ kb = ReplyKeyboardMarkup(keyboard=buttons,
 @dp.message(Command("start"))
 async def command_start_handler(message: Message) -> None:
     await message.answer(
-        text=parser.BotDB.create_user(message.from_user.id, message.from_user.first_name),
+        text=sql_moves.create_user(message.from_user.id, message.from_user.first_name),
         reply_markup=kb)
 
 
@@ -40,18 +43,27 @@ async def help_command(message: Message) -> None:
 
 @dp.message()
 async def flow_command(message: Message) -> None:
-    # await message.answer(text="WORKED")
-
     if message.text in config.FLOWS.keys():
         flow = parser.parse_by_flow(config.FLOWS[message.text])
     else:
-        await message.answer("Такого я еще не знаю")
         return
-    result_str = "Вот свежайшие статьи, которые могут тебя заинтересовать по теме <b>{}</b>\n\n".format(message.text)
+
+    datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    last_update = sql_moves.get_datetime(message.from_user.id, config.FLOWS[message.text])
+    last_update = datetime.fromisoformat(str(last_update))
+    result_str = ""
     for article in flow:
-        # название статьи
-        result_str += f"<b>{article.title}</b>\n<b>Автор:</b> {article.author}\n<a href='{article.url}'>ссылка на статью</a>\n\n"
-    await message.answer(parser.BotDB.update_datetime(config.FLOWS[message.text], message.from_user.id))
+        article_datetime = datetime.strptime(article.time_added,datetime_format)
+        if article_datetime >= last_update:
+            result_str += f"<b>{article.title}</b>\n" \
+                      f"<b>Автор:</b> {article.author}\n" \
+                      f"<a href='{article.url}'>ссылка на статью</a>\n\n"
+    if len(result_str) == 0:
+        result_str = "ты уже видел все новое"
+    else:
+        result_str = "Вот свежайшие статьи, которые могут тебя заинтересовать по теме <b>{}</b>\n\n".format(message.text) \
+                 + result_str
+    sql_moves.update_datetime(config.FLOWS[message.text], message.from_user.id)
     await message.answer(result_str)
 
 
