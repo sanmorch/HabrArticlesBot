@@ -59,7 +59,8 @@ async def flow_command(message: Message) -> None:
                       f"<b>Автор:</b> {article.author}\n" \
                       f"<a href='{article.url}'>ссылка на статью</a>\n\n"
     if len(result_str) == 0:
-        result_str = "ты уже видел все новое"
+        result_str = "Поражаюсь твоей любознательности! Ты ищешь статьи быстрее, чем их успевают писать! Пока новых " \
+                     "статей по этой теме не появилось :( "
     else:
         result_str = "Вот свежайшие статьи, которые могут тебя заинтересовать по теме <b>{}</b>\n\n".format(message.text) \
                  + result_str
