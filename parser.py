@@ -2,7 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 from config import URL_TOPICS, URL_FLOW, URL_BASIC
 import article
+import sql_moves
 
+# sql connect
+BotDB = sql_moves.BotDB()
 
 # обход всех страниц и получение всех разделов
 def parse_topics():

@@ -13,8 +13,10 @@ from aiogram.utils.markdown import hbold
 import config
 import parser
 
-# All handlers should be attached to the Router (or Dispatcher)
+# bot
 dp = Dispatcher()
+
+# keyboard with topics
 buttons = [[KeyboardButton(text="Разработка"), KeyboardButton(text="Администрирование")],
            [KeyboardButton(text="Дизайн"), KeyboardButton(text="Менеджмент")],
            [KeyboardButton(text="Маркетинг"), KeyboardButton(text="Научпоп")]]
@@ -22,15 +24,15 @@ kb = ReplyKeyboardMarkup(keyboard=buttons,
                          resize_keyboard=True)
 
 
-# команда старт
+# start command
 @dp.message(Command("start"))
 async def command_start_handler(message: Message) -> None:
     await message.answer(
-        text=f"Привет, {hbold(message.from_user.full_name)}! Из какого раздела ты хочешь получить статьи?",
+        text=parser.BotDB.create_user(message.from_user.id, message.from_user.first_name),
         reply_markup=kb)
 
 
-# команда help с описанием работы бота
+# help command
 @dp.message(Command("help"))
 async def help_command(message: Message) -> None:
     await message.answer(text=config.HELP_COMMAND)
@@ -39,20 +41,19 @@ async def help_command(message: Message) -> None:
 @dp.message()
 async def flow_command(message: Message) -> None:
     # await message.answer(text="WORKED")
+
     if message.text in config.FLOWS.keys():
         flow = parser.parse_by_flow(config.FLOWS[message.text])
     else:
-        await message.answer("Не понял...")
+        await message.answer("Такого я еще не знаю")
         return
     result_str = "Вот свежайшие статьи, которые могут тебя заинтересовать по теме <b>{}</b>\n\n".format(message.text)
     for article in flow:
         # название статьи
-        result_str += "<b>{}</b>\n".format(article.title)
-        # автор
-        result_str += "<b>Автор:</b> {}\n".format(article.author)
-        # URL
-        result_str += "<a href='{}'>ссылка на статью</a>\n\n".format(article.url)
+        result_str += f"<b>{article.title}</b>\n<b>Автор:</b> {article.author}\n<a href='{article.url}'>ссылка на статью</a>\n\n"
+    await message.answer(parser.BotDB.update_datetime(config.FLOWS[message.text], message.from_user.id))
     await message.answer(result_str)
+
 
 async def main() -> None:
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
