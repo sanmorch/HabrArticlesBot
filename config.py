@@ -14,7 +14,7 @@ def config(filename='database.ini', section='postgresql'):
     return db
 
 
-# for bot
+# for bot token
 TOKEN_API = "6826629475:AAHOoF18iJqGRG1sSqwKWsnpWKPHb9TF5Uk"
 HELP_COMMAND = '''
 /help - список команд 
